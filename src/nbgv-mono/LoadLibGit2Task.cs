@@ -54,11 +54,11 @@ namespace NerdBank.GitVersioning.Mono
 
             // Get the path to the native library. Start with the path to the
             // current assembly, which lives in lib/netstandard2.0/, and work our
-            // way up to runtimes/ubuntu.18.04-x64/native/libgit2-572e4d8.so
+            // way up to build/runtimes/ubuntu.18.04-x64/native/libgit2-572e4d8.so
             // from there.
             var path = typeof(LoadLibGit2Task).Assembly.Location;
             path = Path.GetDirectoryName(path);
-            path = Path.Combine(path, "runtimes/ubuntu.18.04-x64/native/libgit2-572e4d8.so");
+            path = Path.Combine(path, "../../build/runtimes/ubuntu.18.04-x64/native/libgit2-572e4d8.so");
             path = Path.GetFullPath(path);
 
             this.Log.LogMessage($"Loading libgit2.so from {path}");

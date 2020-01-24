@@ -31,34 +31,49 @@ namespace NerdBank.GitVersioning.Mono
             }
 
             var distroId = PlatformApis.GetDistroId();
-
-            if (distroId != "ubuntu")
-            {
-                this.Log.LogWarning($"Running on '{distroId}' which is not Ubuntu. Skipping LoadLibGit2Task.");
-                return true;
-            }
-
             var versionId = PlatformApis.GetDistroVersionId();
 
             if (!Version.TryParse(versionId, out Version version))
             {
-                this.Log.LogWarning($"Could not parse version '{versionId}'. Skipping LoadLibGit2Task.");
-                return true;
+                this.Log.LogWarning($"Could not distro parse version '{versionId}'. Skipping LoadLibGit2Task.");
+                return false;
             }
 
-            if (version < new Version(18, 04))
+            string rid = "linux-x64";
+
+            if (distroId == "ubuntu")
             {
-                this.Log.LogMessage($"Running on '{distroId} {versionId}', which predates Ubuntu 18.04. Skipping LoadLibGit2Task.");
+                if (version < new Version(18, 04))
+                {
+                    this.Log.LogMessage($"Running on '{distroId} {versionId}', which predates Ubuntu 18.04. Skipping LoadLibGit2Task.");
+                    return true;
+                }
+
+                rid = "ubuntu.18.04-x64";
+            }
+            else if(distroId == "debian")
+            {
+                if (version < new Version(9, 0))
+                {
+                    this.Log.LogMessage($"Running on '{distroId} {versionId}', which predates Debian 9. Skipping LoadLibGit2Task.");
+                    return true;
+                }
+
+                rid = "debian.9-x64";
+            }
+            else
+            {
+                this.Log.LogWarning($"Running on '{distroId}' which is not Ubuntu nor Debian. Skipping LoadLibGit2Task.");
                 return true;
             }
 
             // Get the path to the native library. Start with the path to the
             // current assembly, which lives in lib/netstandard2.0/, and work our
-            // way up to build/runtimes/ubuntu.18.04-x64/native/libgit2-572e4d8.so
+            // way up to build/runtimes/{rid}/native/libgit2-572e4d8.so
             // from there.
             var path = typeof(LoadLibGit2Task).Assembly.Location;
             path = Path.GetDirectoryName(path);
-            path = Path.Combine(path, "../../build/runtimes/ubuntu.18.04-x64/native/libgit2-572e4d8.so");
+            path = Path.Combine(path, $"../../build/runtimes/{rid}/native/libgit2-572e4d8.so");
             path = Path.GetFullPath(path);
 
             this.Log.LogMessage($"Loading libgit2.so from {path}");
@@ -67,6 +82,11 @@ namespace NerdBank.GitVersioning.Mono
             {
                 var libHandle = new IntPtr(dlopen(filename, RTLD_LAZY));
                 this.Log.LogMessage($"Loaded libgit2.so as {libHandle}");
+
+                if (libHandle == IntPtr.Zero)
+                {
+                    this.Log.LogError($"Failed to load libgit2.so from {path}");
+                }
 
                 return libHandle != IntPtr.Zero;
             }

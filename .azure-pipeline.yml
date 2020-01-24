@@ -1,0 +1,15 @@
+jobs:
+- job: build
+  steps:
+  - bash: |
+      mkdir upstream
+      cd upstream
+      wget -nv -nc https://www.nuget.org/api/v2/package/Nerdbank.GitVersioning/3.0.50 -O nbgv.nuget
+      unzip nbgv.nuget
+      patchelf --set-soname libgit2-572e4d8.so patchelf --set-soname libgit2-572e4d8.so build/runtimes/ubuntu.18.04-x64/native/libgit2-572e4d8.so
+      patchelf --set-soname libgit2-572e4d8.so patchelf --set-soname libgit2-572e4d8.so build/runtimes/debian.9-x64/native/libgit2-572e4d8.so
+    displayName: Get and patch native libraries
+  - bash: |
+      dotnet pack -c Release
+    cwd: 
+    displayName: Build project

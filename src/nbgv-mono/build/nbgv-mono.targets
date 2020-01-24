@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="NerdBank.GitVersioning.Mono.LoadLibGit2Task" AssemblyFile="$(MSBuildThisFileDirectory)/../lib/netstandard2.0/nbgv-mono.dll" />
+
+  <Target Name="LoadLibgit2" Condition="'$(MSBuildRuntimeType)' == 'Mono' AND '$(OS)' == 'Unix'" BeforeTargets="GetBuildVersion">
+    <NerdBank.GitVersioning.Mono.LoadLibGit2Task />
+  </Target>
+</Project>
